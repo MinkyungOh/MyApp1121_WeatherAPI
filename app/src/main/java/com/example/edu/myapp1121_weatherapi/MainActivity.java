@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
@@ -27,56 +28,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        String resultWeather = "";
+        WeatherDTO resultWeather = null;
         OpenWeatherAPITask task = new OpenWeatherAPITask();
         try {
             switch (v.getId()) {
                 case R.id.londonButton:
-                    resultWeather = (String)task.execute("London").get();
+                    resultWeather = task.execute("London").get();
                     break;
                 case R.id.seoulButton:
-                    resultWeather = (String)task.execute("Seoul").get();
+                    resultWeather = task.execute("Seoul").get();
                     break;
             }
         } catch(Exception e) {
             e.printStackTrace();
         }
-        ((TextView)findViewById(R.id.textView)).setText(resultWeather);
+        ((TextView)findViewById(R.id.textView)).setText(resultWeather.toString());
     }
 
-    class OpenWeatherAPITask extends AsyncTask {
+    class OpenWeatherAPITask extends AsyncTask<String, Void, WeatherDTO> {
 
         @Override
-        protected Object doInBackground(Object[] objects) {
-            String weather = null;
-            String city = (String)objects[0];
+        protected WeatherDTO doInBackground(String... strings) {
+            WeatherDTO dto = null;
+            String city = strings[0];
             String urlString = "http://api.openweathermap.org/data/2.5/weather"
                     + "?q="+city+"&appid=d3c2808867edb5c332a32b8b7e052c41";
             try {
                 URL url = new URL(urlString);
                 HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
                 InputStream in = urlConnection.getInputStream();
-
- //               JSONObject json = new JSONObject()
-
                 byte[] buffer = new byte[1000];
                 in.read(buffer);
-                weather = new String(buffer);
+
+                JSONObject json = new JSONObject(new String(buffer));
+                String temp = json.getJSONObject("main").getString("temp");
+                String cityname = json.getString("name");
+                dto = new WeatherDTO(cityname, temp);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            return weather;
-        }
+            return dto;
+         }
     }
 
-    class Weather {
+    class WeatherDTO {
         public String city;
         public String temperature;
 
-        public Weather(String city, String temperature) {
+        public WeatherDTO(String city, String temperature) {
             this.city = city;
             this.temperature = temperature;
+        }
+
+        public String toString() {
+            return "city=["+city+"], temperature=["+temperature+"]";
         }
     }
 }
