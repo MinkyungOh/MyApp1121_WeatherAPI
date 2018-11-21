@@ -7,6 +7,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.json.JSONObject;
+
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -23,9 +25,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ((Button)findViewById(R.id.seoulButton)).setOnClickListener(this);
     }
 
-    String resultWeather = "";
     @Override
     public void onClick(View v) {
+        String resultWeather = "";
         OpenWeatherAPITask task = new OpenWeatherAPITask();
         try {
             switch (v.getId()) {
@@ -54,6 +56,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 URL url = new URL(urlString);
                 HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
                 InputStream in = urlConnection.getInputStream();
+
+ //               JSONObject json = new JSONObject()
+
                 byte[] buffer = new byte[1000];
                 in.read(buffer);
                 weather = new String(buffer);
@@ -65,5 +70,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    class Weather {
+        public String city;
+        public String temperature;
 
+        public Weather(String city, String temperature) {
+            this.city = city;
+            this.temperature = temperature;
+        }
+    }
 }
